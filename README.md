@@ -16,7 +16,7 @@ A modern, enterprise-grade Point of Sale system built with React, TypeScript, No
 
 ### Frontend
 - React 18 with TypeScript
-- Vite for build tooling
+- Vite for build tooling.
 - TailwindCSS for styling
 - React Router for navigation
 - Context API for state management
@@ -56,13 +56,6 @@ Trust/
 - **Manager**: Access to inventory, sales, reports, and customers
 - **Cashier**: Access to POS and attendance tracking only
 
-## Security
-
-- JWT-based authentication
-- Role-based access control (RBAC)
-- Password hashing with bcrypt
-- Environment variables for sensitive data
-- CORS protection
 
 ## License
 
