@@ -28,63 +28,6 @@ A modern, enterprise-grade Point of Sale system built with React, TypeScript, No
 - JWT authentication
 - Nodemailer for email notifications
 
-## Getting Started
-
-### Prerequisites
-- Node.js 16+ and npm
-- Git
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/BISHOP122222/Trust.git
-   cd Trust
-   ```
-
-2. **Backend Setup**
-   ```bash
-   cd backend
-   npm install
-   cp .env.example .env
-   # Edit .env with your actual configuration
-   npx prisma generate
-   npx prisma migrate dev
-   npm run dev
-   ```
-
-3. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-4. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend: http://localhost:5000
-
-### Default Login Credentials
-After setting up the database, a default admin account will be created:
-- Email: `admin@trust.com`
-- Password: `admin123`
-
-**⚠️ Important: Change these credentials immediately after first login!**
-
-## Environment Variables
-
-### Backend (.env)
-```
-PORT=5000
-DATABASE_URL="file:./trust.db"
-JWT_SECRET="your-secret-key"
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD="your-app-password"
-FRONTEND_URL=http://localhost:5173
-```
-
 ## Project Structure
 
 ```
@@ -121,21 +64,13 @@ Trust/
 - Environment variables for sensitive data
 - CORS protection
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## License
 
 This project is private and proprietary.
 
 ## Support
 
-For support, email support@trustpos.com
+For support, email milanjohnso09@gmail.com
 
 ---
 
