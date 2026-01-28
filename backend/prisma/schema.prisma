@@ -1,0 +1,336 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------------------------
+// User & Role Management
+// --------------------------------------
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("SALES_AGENT") // ADMIN, SALES_MANAGER, SALES_AGENT, INVENTORY_MANAGER
+  isActive  Boolean  @default(true)
+  phone     String?
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Password Reset
+  resetToken        String?
+  resetTokenExpires DateTime?
+
+  // Relations
+  soldOrders  Order[]         @relation("SoldBy")
+  auditLogs   AuditLog[]
+  movements   StockMovement[]
+  attendances Attendance[]
+}
+
+// Separate Customer model for clean separation (optional but good for POS)
+model Customer {
+  id      String  @id @default(uuid())
+  name    String
+  phone   String?
+  email   String?
+  address String?
+
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --------------------------------------
+// Product Catalog & Inventory
+// --------------------------------------
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  parentId      String?
+  parent        Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  subCategories Category[] @relation("SubCategories")
+
+  products Product[]
+}
+
+model Product {
+  id           String  @id @default(uuid())
+  name         String
+  description  String
+  price        Float // In UGX
+  sku          String? @unique
+  serialNumber String?
+  brand        String?
+  imageUrl     String?
+
+  // Inventory
+  stockQuantity     Int    @default(0)
+  lowStockThreshold Int    @default(5)
+  costPrice         Float?
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  warrantyMonths Int @default(0)
+
+  isActive     Boolean @default(true)
+  isSerialized Boolean @default(false)
+
+  specs       ProductSpec[]
+  orderItems  OrderItem[]
+  movements   StockMovement[]
+  serialItems SerialItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supplier {
+  id      String  @id @default(uuid())
+  name    String
+  contact String?
+  email   String?
+  phone   String?
+  address String?
+
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model ProductSpec {
+  id        String  @id @default(uuid())
+  productId String
+  key       String
+  value     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// --------------------------------------
+// Sales & Orders
+// --------------------------------------
+model Order {
+  id             String @id @default(uuid())
+  orderNumber    String @unique
+  status         String @default("PENDING")
+  totalAmount    Float
+  subtotal       Float
+  taxAmount      Float  @default(0)
+  discountAmount Float  @default(0)
+
+  // Discount applied
+  discountId String?
+  discount   Discount? @relation(fields: [discountId], references: [id])
+  couponCode String?
+
+  // Relations
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  agentId String?
+  agent   User?   @relation("SoldBy", fields: [agentId], references: [id])
+
+  items   OrderItem[]
+  payment Payment?
+  receipt Receipt?
+  returns Return[]
+
+  shippingAddress String?
+  notes           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  costPrice Float?
+
+  serialNumber String?
+  serialItemId String?     @unique
+  serialItem   SerialItem? @relation(fields: [serialItemId], references: [id])
+
+  warrantyExpiry DateTime?
+  discountAmount Float     @default(0)
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  orderId        String   @unique
+  order          Order    @relation(fields: [orderId], references: [id])
+  amount         Float
+  amountTendered Float?
+  changeAmount   Float?
+  method         String
+  status         String
+  transactionId  String?
+  reference      String?
+  createdAt      DateTime @default(now())
+}
+
+// --------------------------------------
+// POS Features
+// --------------------------------------
+model Receipt {
+  id            String    @id @default(uuid())
+  orderId       String    @unique
+  order         Order     @relation(fields: [orderId], references: [id])
+  receiptNumber String
+  content       String
+  printedAt     DateTime?
+  reprintCount  Int       @default(0)
+  createdAt     DateTime  @default(now())
+}
+
+model Discount {
+  id          String    @id @default(uuid())
+  code        String?   @unique
+  name        String
+  description String?
+  type        String
+  value       Float
+  minPurchase Float?
+  maxDiscount Float?
+  isActive    Boolean   @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaxConfig {
+  id       String  @id @default(uuid())
+  name     String
+  rate     Float
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --------------------------------------
+// Advanced Management & Logs
+// --------------------------------------
+model StockMovement {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  type      String
+  quantity  Int
+  reason    String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Return {
+  id          String       @id @default(uuid())
+  orderId     String
+  order       Order        @relation(fields: [orderId], references: [id])
+  reason      String
+  totalRefund Float
+  status      String       @default("COMPLETED")
+  items       ReturnItem[]
+  createdAt   DateTime     @default(now())
+}
+
+model ReturnItem {
+  id          String  @id @default(uuid())
+  returnId    String
+  return      Return  @relation(fields: [returnId], references: [id])
+  orderItemId String
+  quantity    Int
+  condition   String?
+}
+
+model AuditLog {
+  id       String @id @default(uuid())
+  action   String // e.g., PRODUCT_UPDATE, SALE
+  severity String @default("INFO") // INFO, WARNING, ERROR, CRITICAL
+
+  entityType String?
+  entityId   String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  details   String? // Flexible field for log details
+  oldValue  String?
+  newValue  String?
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model BrandingSettings {
+  id String @id @default(uuid())
+
+  businessName      String   @default("TRUST POS")
+  address           String?
+  phone             String?
+  email             String?
+  logoUrl           String?
+  footerMessage     String?
+  theme             String   @default("BLUE")
+  primaryColor      String?
+  secondaryColor    String?
+  accentColor       String?
+  enableCustomTheme Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SerialItem {
+  id           String @id @default(uuid())
+  serialNumber String @unique
+  status       String @default("AVAILABLE")
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  orderItemId String?    @unique
+  orderItem   OrderItem?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  checkIn   DateTime  @default(now())
+  checkOut  DateTime?
+  status    String    @default("ON_TIME")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model SystemConfig {
+  id              String  @id @default("global-config")
+  maintenanceMode Boolean @default(false)
+  
+  updatedAt DateTime @updatedAt
+}

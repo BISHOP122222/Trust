@@ -1,0 +1,35 @@
+node_modules
+dist
+build
+.env
+.env.*
+!.env.example
+.DS_Store
+coverage
+.vscode
+.idea
+log
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database
+*.db
+*.db-journal
+prisma/migrations/
+
+# Uploads
+uploads/
+*/uploads/
+
+# OS
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+
+# IDE
+*.sublime-*
+.vscode/settings.json

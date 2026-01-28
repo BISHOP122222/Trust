@@ -1,0 +1,10 @@
+src/pages/Dashboard.tsx(4,35): error TS2307: Cannot find module '@/components/ui/Card' or its corresponding type declarations.
+src/pages/Dashboard.tsx(5,26): error TS2307: Cannot find module '@/contexts/ToastContext' or its corresponding type declarations.
+src/pages/Dashboard.tsx(6,32): error TS2307: Cannot find module '@/contexts/SalesContext' or its corresponding type declarations.
+src/pages/Dashboard.tsx(7,25): error TS2307: Cannot find module '@/contexts/UserContext' or its corresponding type declarations.
+src/pages/Dashboard.tsx(8,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+src/pages/Dashboard.tsx(9,19): error TS2307: Cannot find module '@/components/ui/Modal' or its corresponding type declarations.
+src/pages/Dashboard.tsx(10,51): error TS2307: Cannot find module '@/components/analytics/PowerBICharts' or its corresponding type declarations.
+src/pages/Dashboard.tsx(11,47): error TS2307: Cannot find module '@/components/dashboard/PremiumCharts' or its corresponding type declarations.
+src/pages/Dashboard.tsx(12,33): error TS2307: Cannot find module '@/components/dashboard/DashboardCustomizer' or its corresponding type declarations.
+src/pages/Dashboard.tsx(13,57): error TS2307: Cannot find module '@/utils/ExportUtils' or its corresponding type declarations.
