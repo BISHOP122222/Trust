@@ -15,6 +15,7 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [websiteUrl, setWebsiteUrl] = useState(''); // Honeypot field
     const [remember, setRemember] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export default function Login() {
         e.preventDefault();
         setIsLoading(true);
 
-        const loggedInUser = await login(email, password, remember);
+        const loggedInUser = await login(email, password, remember, websiteUrl);
 
         if (loggedInUser) {
             showToast('Login successful! Redirecting...', 'success');
@@ -73,6 +74,17 @@ export default function Login() {
                         </div>
 
                         <form onSubmit={handleLogin} className="space-y-6">
+                            {/* Honeypot Field */}
+                            <div className="hidden" aria-hidden="true">
+                                <input
+                                    type="text"
+                                    name="website_url"
+                                    value={websiteUrl}
+                                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                />
+                            </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Email Address</label>
                                 <div className="relative group">

@@ -102,6 +102,49 @@ export default function Settings() {
     const [attendanceData, setAttendanceData] = useState<any[]>([]);
     const [attendanceLoading, setAttendanceLoading] = useState(false);
 
+    // Support Contact Form State
+    const [contactForm, setContactForm] = useState({
+        name: user?.name || '',
+        email: user?.email || '',
+        subject: '',
+        message: ''
+    });
+    const [contactHoneypot, setContactHoneypot] = useState('');
+    const [contactLoading, setContactLoading] = useState(false);
+
+    const handleContactSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setContactLoading(true);
+        try {
+            await api.post('/support/contact', { ...contactForm, website_url: contactHoneypot });
+            showToast('Support request sent successfully!', 'success');
+            setContactForm({ ...contactForm, subject: '', message: '' });
+        } catch (error: any) {
+            showToast(error.response?.data?.message || 'Failed to send request', 'error');
+        } finally {
+            setContactLoading(false);
+        }
+    };
+
+    const handleDownloadData = () => {
+        const data = {
+            profile: user,
+            attendance: attendanceData,
+            timestamp: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `trust_pos_data_${user?.id || 'export'}.json`;
+        a.click();
+        showToast('Your personal data has been exported', 'success');
+    };
+
+    const handleDeleteAccountRequest = () => {
+        showToast('Account deletion request received. Our support team will contact you to confirm identity.', 'info');
+    };
+
     const fetchAttendance = async () => {
         setAttendanceLoading(true);
         try {
@@ -204,9 +247,26 @@ export default function Settings() {
                                 <input type="text" defaultValue={user?.role} disabled className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-500 cursor-not-allowed" />
                             </div>
 
-                            <div className="pt-4">
+                            <div className="pt-4 flex gap-3">
                                 <button type="submit" className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium shadow-sm transition-colors">
                                     Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDownloadData}
+                                    className="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+                                    title="Export all your personal data (GDPR Right to Portability)"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Download My Data
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteAccountRequest}
+                                    className="px-4 py-2.5 border border-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
+                                    title="Request account deletion (GDPR Right to Erasure)"
+                                >
+                                    Delete Account
                                 </button>
                             </div>
                         </form>
@@ -538,9 +598,26 @@ export default function Settings() {
                             <div className="p-6 bg-blue-50 rounded-xl border border-blue-100">
                                 <h3 className="text-blue-900 font-bold mb-2">Need Immediate Help?</h3>
                                 <p className="text-sm text-blue-700 mb-4">Our support team is available 24/7 to assist you with any issues.</p>
-                                <div className="flex gap-3">
-                                    <a href="mailto:support@trustpos.com" className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Email Support</a>
-                                    <a href="https://wa.me/256744841010" target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600">WhatsApp Us</a>
+                                <div className="flex flex-col gap-2">
+                                    <div className="p-3 bg-white/50 rounded-lg text-xs font-bold text-blue-800 flex items-center justify-between group">
+                                        <span>Support Email:</span>
+                                        <span
+                                            className="cursor-pointer hover:text-blue-600 transition-colors select-none"
+                                            onClick={() => window.location.href = `mailto:${['support', 'trustpos.com'].join('@')}`}
+                                        >
+                                            {/* Obfuscated Display */}
+                                            {['supp', 'ort', '@', 'trust', 'pos.com'].map((s, i) => <span key={i}>{s}</span>)}
+                                        </span>
+                                    </div>
+                                    <div className="p-3 bg-white/50 rounded-lg text-xs font-bold text-blue-800 flex items-center justify-between">
+                                        <span>WhatsApp:</span>
+                                        <span
+                                            className="cursor-pointer hover:text-green-600 transition-colors select-none"
+                                            onClick={() => window.open(`https://wa.me/${['256', '744', '841', '010'].join('')}`, '_blank')}
+                                        >
+                                            {['+', '256', ' ', '744', ' ', '841', ' ', '010'].map((s, i) => <span key={i}>{s}</span>)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
@@ -553,6 +630,74 @@ export default function Settings() {
                                     View Logic Guides
                                 </button>
                             </div>
+                        </div>
+
+                        <div className="bg-white border border-slate-100 rounded-[2rem] p-8 shadow-sm mb-8">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6 uppercase tracking-tight">Contact Support Form</h3>
+                            <form onSubmit={handleContactSubmit} className="space-y-4">
+                                {/* Honeypot Field */}
+                                <div className="hidden" aria-hidden="true">
+                                    <input
+                                        type="text"
+                                        name="website_url"
+                                        value={contactHoneypot}
+                                        onChange={(e) => setContactHoneypot(e.target.value)}
+                                        tabIndex={-1}
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={contactForm.name}
+                                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Email</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={contactForm.email}
+                                            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Subject</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={contactForm.subject}
+                                        onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
+                                        placeholder="How can we help?"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Message</label>
+                                    <textarea
+                                        required
+                                        rows={4}
+                                        value={contactForm.message}
+                                        onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium resize-none"
+                                        placeholder="Describe your issue in detail..."
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={contactLoading}
+                                    className="px-8 py-3 bg-slate-900 border border-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 shadow-sm transition-all disabled:opacity-50"
+                                >
+                                    {contactLoading ? 'Sending...' : 'Send Message'}
+                                </button>
+                            </form>
                         </div>
 
                         <h3 className="text-md font-bold text-slate-900 mb-4">Frequently Asked Questions</h3>

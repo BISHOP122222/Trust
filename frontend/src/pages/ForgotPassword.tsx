@@ -8,13 +8,14 @@ export default function ForgotPassword() {
     const { showToast } = useToast();
     const [step, setStep] = useState(1); // 1: Email, 2: Success Message
     const [email, setEmail] = useState('');
+    const [websiteUrl, setWebsiteUrl] = useState(''); // Honeypot field
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSendLink = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await api.post('/auth/forgot-password', { email });
+            await api.post('/auth/forgot-password', { email, website_url: websiteUrl });
             showToast('Password reset link sent to your email', 'success');
             setStep(2);
         } catch (error: any) {
@@ -46,6 +47,17 @@ export default function ForgotPassword() {
                 <div className="bg-white py-10 px-6 shadow-2xl shadow-slate-200 sm:rounded-[2rem] sm:px-10 border border-slate-100">
                     {step === 1 ? (
                         <form className="space-y-6" onSubmit={handleSendLink}>
+                            {/* Honeypot Field */}
+                            <div className="hidden" aria-hidden="true">
+                                <input
+                                    type="text"
+                                    name="website_url"
+                                    value={websiteUrl}
+                                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                />
+                            </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
                                 <div className="relative">

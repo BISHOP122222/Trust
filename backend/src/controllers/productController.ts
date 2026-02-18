@@ -66,15 +66,14 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
         }
 
         if (lowStock === 'true') {
-            where.stockQuantity = {
-                lte: prisma.product.fields.lowStockThreshold // This is tricky in Prisma without raw SQL or computed fields
-            };
-            // Reverting to fetch all and filter in JS for lowStock if Prisma doesn't support field-to-field comparison easily in SQLite
+            // Optimize low stock filtering using raw SQL for field-to-field comparison
+            const lowStockIds = await prisma.$queryRaw<{ id: string }[]>`
+                SELECT id FROM Product 
+                WHERE stockQuantity <= lowStockThreshold AND isActive = 1
+            `;
+            const ids = lowStockIds.map(p => p.id);
+            where.id = { in: ids };
         }
-
-        // To support lowStock accurately with Prisma/SQLite, we fetch all for now or filter after
-        // Given we are paginating, we should try to filter in DB.
-        // For SQLite, we can't do where stockQuantity <= lowStockThreshold easily in Prisma.
 
         const [products, total] = await Promise.all([
             prisma.product.findMany({
@@ -93,34 +92,11 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
             prisma.product.count({ where })
         ]);
 
-        let resultProducts = products;
-        let resultTotal = total;
-
-        if (lowStock === 'true') {
-            // If lowStock is requested, we apply JS filtering (might break exact total count for pagination if many products)
-            // Ideally should be a raw query or better schema design
-            const allProducts = await prisma.product.findMany({
-                where,
-                include: {
-                    category: true,
-                    specs: true,
-                    serialItems: {
-                        where: { status: 'AVAILABLE' }
-                    }
-                }
-            });
-            resultProducts = allProducts.filter(p => p.stockQuantity <= p.lowStockThreshold);
-            resultTotal = resultProducts.length;
-
-            // Re-apply pagination to the filtered set
-            resultProducts = resultProducts.slice(skip, skip + limit);
-        }
-
         res.json({
-            products: resultProducts,
+            products,
             page,
-            pages: Math.ceil(resultTotal / limit),
-            total: resultTotal
+            pages: Math.ceil(total / limit),
+            total
         });
     } catch (error) {
         next(error);

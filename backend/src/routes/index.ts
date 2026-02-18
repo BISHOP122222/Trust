@@ -15,6 +15,7 @@ import customerRoutes from './customerRoutes';
 import auditLogRoutes from './auditLogRoutes';
 import attendanceRoutes from './attendanceRoutes';
 import systemConfigRoutes from './systemConfigRoutes';
+import supportRoutes from './supportRoutes';
 
 const router = Router();
 
@@ -32,7 +33,7 @@ router.use('/branding', brandingRoutes);
 router.use('/customers', customerRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/attendance', attendanceRoutes);
-router.use('/attendance', attendanceRoutes);
 router.use('/system-config', systemConfigRoutes);
+router.use('/support', supportRoutes);
 
 export default router;

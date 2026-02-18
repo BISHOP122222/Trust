@@ -26,7 +26,7 @@ export interface UserProfile {
 interface UserContextType {
     user: UserProfile | null;
     users: UserProfile[];
-    login: (email: string, password: string, remember?: boolean) => Promise<UserProfile | null>;
+    login: (email: string, password: string, remember?: boolean, website_url?: string) => Promise<UserProfile | null>;
     logout: () => void;
     updateUser: (updates: Partial<UserProfile>) => void;
     addUser: (user: UserProfile) => void;
@@ -81,9 +81,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }, [user]);
 
-    const login = async (email: string, password: string, remember: boolean = false): Promise<UserProfile | null> => {
+    const login = async (email: string, password: string, remember: boolean = false, website_url?: string): Promise<UserProfile | null> => {
         try {
-            const response = await api.post('/auth/login', { email, password, remember });
+            const response = await api.post('/auth/login', { email, password, remember, website_url });
             const { token, user: userData } = response.data;
 
             // Save token to localStorage

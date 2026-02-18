@@ -28,6 +28,7 @@ const Categories = lazy(() => import('@/pages/Categories'));
 const Discounts = lazy(() => import('@/pages/Discounts'));
 const Returns = lazy(() => import('@/pages/Returns'));
 const Logs = lazy(() => import('@/pages/Logs'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 
 const NotFound = () => <div className="p-10 text-center text-slate-500 font-bold">404 - Page Not Found</div>;
 
@@ -67,6 +68,7 @@ function App() {
                                                 <Route path="/login" element={<Login />} />
                                                 <Route path="/forgot-password" element={<ForgotPassword />} />
                                                 <Route path="/reset-password/:token" element={<ResetPassword />} />
+                                                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
                                                 <Route element={<Layout />}>
                                                     <Route path="/dashboard" element={

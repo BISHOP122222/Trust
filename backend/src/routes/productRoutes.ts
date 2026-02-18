@@ -14,7 +14,7 @@ import { upload } from '../middleware/uploadMiddleware';
 const router = Router();
 
 router.route('/')
-    .get(protect, getProducts)
+    .get(getProducts)
     .post(protect, authorize('SUPER_ADMIN', 'ADMIN'), upload.single('image'), createProduct);
 
 router.route('/:id')

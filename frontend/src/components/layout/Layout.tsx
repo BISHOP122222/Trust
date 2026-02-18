@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import ContextMenu from '../ui/ContextMenu';
+import CookieConsent from '../ui/CookieConsent';
 import { useState } from 'react';
 
 export default function Layout() {
@@ -28,6 +29,7 @@ export default function Layout() {
                 </main>
             </div>
             <ContextMenu />
+            <CookieConsent />
         </div>
     );
 }

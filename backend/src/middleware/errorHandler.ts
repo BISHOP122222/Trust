@@ -1,8 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import logger from '../utils/logger';
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error(err);
+    logger.error(err.message || 'Error', {
+        stack: err.stack,
+        url: req.originalUrl,
+        method: req.method,
+        body: req.body
+    });
 
     if (err instanceof ZodError) {
         return res.status(400).json({

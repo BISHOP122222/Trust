@@ -35,6 +35,8 @@ model User {
   auditLogs   AuditLog[]
   movements   StockMovement[]
   attendances Attendance[]
+
+  @@index([role])
 }
 
 // Separate Customer model for clean separation (optional but good for POS)
@@ -98,6 +100,10 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([name])
 }
 
 model Supplier {
@@ -155,6 +161,10 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([agentId])
+  @@index([status])
 }
 
 model OrderItem {
